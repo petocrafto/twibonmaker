@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Twibbon Maker - SMP Negeri 6 Temanggung</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts (Plus Jakarta Sans) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    /* Checkerboard background for transparency preview */
+    .bg-checkerboard {
+      background-color: #f8fafc;
+      background-image: 
+        linear-gradient(45deg, #e2e8f0 25%, transparent 25%), 
+        linear-gradient(-45deg, #e2e8f0 25%, transparent 25%), 
+        linear-gradient(45deg, transparent 75%, #e2e8f0 75%), 
+        linear-gradient(-45deg, transparent 75%, #e2e8f0 75%);
+      background-size: 20px 20px;
+      background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+    }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-full flex flex-col justify-between overflow-x-hidden selection:bg-amber-500 selection:text-slate-900">
+
+  <!-- Header -->
+  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur-md sticky top-0 z-50 px-4 py-3">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <div class="p-2.5 bg-gradient-to-tr from-amber-500 to-orange-600 rounded-xl shadow-lg shadow-amber-500/10">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-slate-900" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+        </div>
+        <div>
+          <h1 class="text-lg font-extrabold tracking-tight bg-gradient-to-r from-amber-400 via-orange-400 to-yellow-400 bg-clip-text text-transparent">
+            TWIBBON SPENASIX 35
+          </h1>
+          <p class="text-xs text-slate-400 font-medium">SMP Negeri 6 Temanggung — MPLS 2026</p>
+        </div>
+      </div>
+      
+      <div class="flex items-center gap-2 text-xs">
+        <span class="inline-flex items-center px-2.5 py-1 rounded-full bg-emerald-500/10 text-emerald-400 font-semibold border border-emerald-500/20">
+          <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1.5 animate-pulse"></span>
+          Deteksi Transparansi Aktif
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="flex-grow max-w-7xl w-full mx-auto px-4 py-6 md:py-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+    
+    <!-- Left Column: Canvas Preview (7 Cols) -->
+    <div class="lg:col-span-7 flex flex-col items-center gap-4">
+      <div class="w-full max-w-[500px] lg:max-w-[550px] aspect-square rounded-2xl border-2 border-slate-700/60 bg-checkerboard shadow-2xl shadow-black/60 relative overflow-hidden group">
+        <!-- Main Interactive Canvas -->
+        <canvas id="twibbonCanvas" class="w-full h-full cursor-grab active:cursor-grabbing transition-shadow duration-300"></canvas>
+        
+        <!-- Frame Loading Indicator / Overlay Info -->
+        <div id="loadingOverlay" class="absolute inset-0 bg-slate-900/95 flex flex-col items-center justify-center p-6 text-center transition-opacity duration-300">
+          <div class="relative w-16 h-16 mb-4">
+            <div class="absolute inset-0 rounded-full border-4 border-slate-700"></div>
+            <div class="absolute inset-0 rounded-full border-4 border-amber-500 border-t-transparent animate-spin"></div>
+          </div>
+          <h3 class="text-base font-bold text-slate-200">Sedang Memproses Bingkai...</h3>
+          <p class="text-xs text-slate-400 mt-1 max-w-xs">Menghilangkan latar belakang hitam pada area foto agar menjadi transparan secara dinamis.</p>
+        </div>
+
+        <!-- Watermark/Hint overlay when no photo uploaded -->
+        <div id="uploadHint" class="absolute inset-0 pointer-events-none flex flex-col items-center justify-center p-8 text-center bg-slate-900/40 transition-opacity duration-300">
+          <div class="p-4 rounded-full bg-slate-900/85 backdrop-blur-md border border-slate-700 shadow-xl mb-3 animate-bounce">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+            </svg>
+          </div>
+          <p class="px-4 py-1.5 rounded-full bg-slate-900/90 backdrop-blur-sm border border-slate-700/80 text-sm font-semibold text-slate-200 shadow-md">
+            Ketuk "Unggah Foto Anda" di sebelah kanan
+          </p>
+        </div>
+      </div>
+      
+      <!-- Interactive Tips -->
+      <p class="text-xs text-slate-400 flex items-center gap-1.5 text-center px-4">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-amber-500 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span>Tips: Anda bisa mengklik langsung pada foto lalu menggesernya, atau menggunakan tombol slider presisi di sebelah kanan.</span>
+      </p>
+    </div>
+
+    <!-- Right Column: Controls & Configuration (5 Cols) -->
+    <div class="lg:col-span-5 flex flex-col gap-6">
+      
+      <!-- Box 1: File Uploads -->
+      <div class="p-6 bg-slate-800/50 border border-slate-700/60 rounded-2xl shadow-md">
+        <h2 class="text-md font-bold text-slate-100 flex items-center gap-2 mb-4">
+          <span class="w-6 h-6 flex items-center justify-center rounded-lg bg-amber-500 text-slate-900 text-xs font-bold">1</span>
+          Unggah Foto & Bingkai
+        </h2>
+        
+        <div class="space-y-4">
+          <!-- User Photo Upload -->
+          <div>
+            <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Foto Peserta MPLS</label>
+            <div class="relative flex items-center justify-center w-full">
+              <label for="userPhotoInput" class="flex flex-col items-center justify-center w-full h-28 border-2 border-dashed border-slate-600 hover:border-amber-500 rounded-xl cursor-pointer bg-slate-800/80 hover:bg-slate-800 transition-colors group">
+                <div class="flex flex-col items-center justify-center pt-5 pb-6 px-4 text-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-slate-400 group-hover:text-amber-400 mb-2 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <p class="text-xs font-medium text-slate-300"><span class="font-bold text-amber-400">Pilih Foto</span> atau seret kesini</p>
+                  <p class="text-[10px] text-slate-500 mt-1">PNG, JPG, atau WEBP up to 10MB</p>
+                </div>
+                <input id="userPhotoInput" type="file" accept="image/*" class="hidden" />
+              </label>
+            </div>
+          </div>
+
+          <!-- Advanced: Upload custom frame -->
+          <div class="border-t border-slate-700/50 pt-3">
+            <button id="toggleFrameUploadBtn" class="text-xs text-slate-400 hover:text-slate-200 flex items-center gap-1 transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <span>Ingin ganti file Bingkai (Twibbon)?</span>
+            </button>
+            
+            <div id="frameUploadWrapper" class="hidden mt-3">
+              <div class="p-3 rounded-lg bg-slate-900 border border-slate-700">
+                <p class="text-[10px] text-amber-400 mb-2">Bingkai bawaan sudah otomatis memuat file MPLS 2026. Anda hanya perlu mengunggah opsi ini jika memiliki file desain twibbon lain.</p>
+                <input id="framePhotoInput" type="file" accept="image/*" class="block w-full text-xs text-slate-400 file:mr-3 file:py-1 file:px-2 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-slate-300 hover:file:bg-slate-700 cursor-pointer" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Box 2: Adjustments -->
+      <div class="p-6 bg-slate-800/50 border border-slate-700/60 rounded-2xl shadow-md">
+        <h2 class="text-md font-bold text-slate-100 flex items-center gap-2 mb-4">
+          <span class="w-6 h-6 flex items-center justify-center rounded-lg bg-amber-500 text-slate-900 text-xs font-bold">2</span>
+          Atur Foto Anda
+        </h2>
+        
+        <div class="space-y-4">
+          <!-- Zoom Slider -->
+          <div>
+            <div class="flex justify-between items-center mb-1.5">
+              <label for="zoomSlider" class="text-xs font-semibold text-slate-300">Ukuran Foto (Zoom)</label>
+              <span id="zoomValue" class="text-xs font-mono text-amber-400">100%</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <button id="zoomOutBtn" class="p-1.5 rounded bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-bold transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M20 12H4" /></svg>
+              </button>
+              <input id="zoomSlider" type="range" min="10" max="300" value="100" class="flex-grow accent-amber-500 h-1.5 bg-slate-700 rounded-lg cursor-pointer" />
+              <button id="zoomInBtn" class="p-1.5 rounded bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-bold transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" /></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Rotation Slider -->
+          <div>
+            <div class="flex justify-between items-center mb-1.5">
+              <label for="rotateSlider" class="text-xs font-semibold text-slate-300">Putar (Rotasi)</label>
+              <span id="rotateValue" class="text-xs font-mono text-amber-400">0°</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <button id="rotateCCWBtn" class="p-1.5 rounded bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs transition-colors" title="Putar Kiri">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0019 16V8a1 1 0 00-1.6-.8l-5.334 4z" /><path stroke-linecap="round" stroke-linejoin="round" d="M4.034 12h11.966" /></svg>
+              </button>
+              <input id="rotateSlider" type="range" min="-180" max="180" value="0" class="flex-grow accent-amber-500 h-1.5 bg-slate-700 rounded-lg cursor-pointer" />
+              <button id="rotateCWBtn" class="p-1.5 rounded bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs transition-colors" title="Putar Kanan">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M11.934 12.8a1 1 0 000-1.6l-5.334-4A1 1 0 005 8v8a1 1 0 001.6.8l5.334-4z" /><path stroke-linecap="round" stroke-linejoin="round" d="M19.966 12H8" /></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Horizontal Position Slider (NEW) -->
+          <div>
+            <div class="flex justify-between items-center mb-1.5">
+              <label for="xSlider" class="text-xs font-semibold text-slate-300">Geser Kiri - Kanan (X)</label>
+              <span id="xValue" class="text-xs font-mono text-amber-400">0px</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <button id="xLeftBtn" class="p-1.5 rounded bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-bold transition-colors" title="Geser Kiri">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg>
+              </button>
+              <input id="xSlider" type="range" min="0" max="1200" value="600" class="flex-grow accent-amber-500 h-1.5 bg-slate-700 rounded-lg cursor-pointer" />
+              <button id="xRightBtn" class="p-1.5 rounded bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-bold transition-colors" title="Geser Kanan">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" /></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Vertical Position Slider (NEW) -->
+          <div>
+            <div class="flex justify-between items-center mb-1.5">
+              <label for="ySlider" class="text-xs font-semibold text-slate-300">Geser Atas - Bawah (Y)</label>
+              <span id="yValue" class="text-xs font-mono text-amber-400">0px</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <button id="yUpBtn" class="p-1.5 rounded bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-bold transition-colors" title="Geser Atas">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7" /></svg>
+              </button>
+              <input id="ySlider" type="range" min="0" max="1200" value="600" class="flex-grow accent-amber-500 h-1.5 bg-slate-700 rounded-lg cursor-pointer" />
+              <button id="yDownBtn" class="p-1.5 rounded bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-bold transition-colors" title="Geser Bawah">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" /></svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Quick Action Buttons -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2">
+            <button id="flipHBtn" class="py-2 px-2 rounded-xl bg-slate-700/60 hover:bg-slate-700 border border-slate-600/50 text-xs font-medium text-slate-200 flex items-center justify-center gap-1.5 transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4" />
+              </svg>
+              Balik Kiri-Kanan
+            </button>
+            <button id="flipVBtn" class="py-2 px-2 rounded-xl bg-slate-700/60 hover:bg-slate-700 border border-slate-600/50 text-xs font-medium text-slate-200 flex items-center justify-center gap-1.5 transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+              </svg>
+              Balik Atas-Bawah
+            </button>
+            <button id="centerPhotoBtn" class="py-2 px-2 rounded-xl bg-slate-700/60 hover:bg-slate-700 border border-slate-600/50 text-xs font-medium text-slate-200 flex items-center justify-center gap-1.5 transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
+              </svg>
+              Posisikan Tengah
+            </button>
+            <button id="resetAllBtn" class="py-2 px-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-xs font-medium text-red-400 flex items-center justify-center gap-1.5 transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.27 15" />
+              </svg>
+              Reset Setelan
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Box 3: Advanced Masking Configuration (Collapsible) -->
+      <div class="p-6 bg-slate-800/30 border border-slate-700/40 rounded-2xl shadow-sm">
+        <button id="toggleMaskSettingsBtn" class="w-full flex items-center justify-between text-left group">
+          <div class="flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-slate-400 group-hover:text-amber-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+            <span class="text-xs font-bold text-slate-300 group-hover:text-slate-100 transition-colors">Pengaturan Masking Potongan (Tingkat Lanjut)</span>
+          </div>
+          <svg xmlns="http://www.w3.org/2000/svg" id="maskArrow" class="h-4 w-4 text-slate-400 transform transition-transform duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+
+        <div id="maskSettingsWrapper" class="hidden mt-4 space-y-3.5 pt-3 border-t border-slate-700/30">
+          <p class="text-[10px] text-slate-400 leading-relaxed">
+            Sistem kami memindai bagian tengah bingkai dan menghapus warna hitam. Anda dapat membatasi jangkauan area pemotongan di bawah agar bagian rambut/mata gelap di tepi luar bingkai tidak ikut hilang.
+          </p>
+          
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[10px] font-semibold text-slate-400 mb-1">Batas Kiri (%)</label>
+              <input id="maskLeft" type="range" min="0" max="50" value="23" class="w-full accent-amber-500 h-1 bg-slate-700 rounded" />
+            </div>
+            <div>
+              <label class="block text-[10px] font-semibold text-slate-400 mb-1">Batas Kanan (%)</label>
+              <input id="maskRight" type="range" min="50" max="100" value="77" class="w-full accent-amber-500 h-1 bg-slate-700 rounded" />
+            </div>
+            <div>
+              <label class="block text-[10px] font-semibold text-slate-400 mb-1">Batas Atas (%)</label>
+              <input id="maskTop" type="range" min="0" max="50" value="28" class="w-full accent-amber-500 h-1 bg-slate-700 rounded" />
+            </div>
+            <div>
+              <label class="block text-[10px] font-semibold text-slate-400 mb-1">Batas Bawah (%)</label>
+              <input id="maskBottom" type="range" min="50" max="100" value="77" class="w-full accent-amber-500 h-1 bg-slate-700 rounded" />
+            </div>
+          </div>
+          
+          <div>
+            <div class="flex justify-between text-[10px] font-semibold text-slate-400 mb-1">
+              <span>Ambang Toleransi Gelap (Threshold)</span>
+              <span id="maskThreshVal" class="text-amber-400">30</span>
+            </div>
+            <input id="maskThreshold" type="range" min="5" max="100" value="30" class="w-full accent-amber-500 h-1 bg-slate-700 rounded" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Action Button: Download -->
+      <button id="downloadBtn" class="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-amber-500 via-orange-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-450 text-slate-900 font-extrabold text-sm tracking-wide shadow-xl shadow-amber-500/20 hover:shadow-amber-500/30 flex items-center justify-center gap-2 transform active:scale-[0.98] transition-all duration-150">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 stroke-[2.5]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+        </svg>
+        UNDUH TWIBBON (PNG)
+      </button>
+
+    </div>
+  </main>
+
+  <!-- Notification Toast Container -->
+  <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-800 bg-slate-950 px-4 py-5 text-center text-xs text-slate-500 mt-10">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+      <p>© 2026 SMP Negeri 6 Temanggung. All rights reserved.</p>
+      <div class="flex items-center gap-4">
+        <a href="#" class="hover:text-amber-400 transition-colors">Panduan Penggunaan</a>
+        <span class="text-slate-700">|</span>
+        <a href="#" class="hover:text-amber-400 transition-colors">Panitia MPLS 2026</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- App logic in vanilla JavaScript -->
+  <script>
+    // System Config & Global Variables
+    const DEFAULT_FRAME_URL = "New Project 4 [EC9678F].jpg";
+    
+    // Elements
+    const canvas = document.getElementById('twibbonCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    // Inputs & Buttons
+    const userPhotoInput = document.getElementById('userPhotoInput');
+    const framePhotoInput = document.getElementById('framePhotoInput');
+    const toggleFrameUploadBtn = document.getElementById('toggleFrameUploadBtn');
+    const frameUploadWrapper = document.getElementById('frameUploadWrapper');
+    
+    const zoomSlider = document.getElementById('zoomSlider');
+    const zoomValue = document.getElementById('zoomValue');
+    const zoomInBtn = document.getElementById('zoomInBtn');
+    const zoomOutBtn = document.getElementById('zoomOutBtn');
+    
+    const rotateSlider = document.getElementById('rotateSlider');
+    const rotateValue = document.getElementById('rotateValue');
+    const rotateCCWBtn = document.getElementById('rotateCCWBtn');
+    const rotateCWBtn = document.getElementById('rotateCWBtn');
+
+    // Position Control Elements (NEW)
+    const xSlider = document.getElementById('xSlider');
+    const xValue = document.getElementById('xValue');
+    const xLeftBtn = document.getElementById('xLeftBtn');
+    const xRightBtn = document.getElementById('xRightBtn');
+
+    const ySlider = document.getElementById('ySlider');
+    const yValue = document.getElementById('yValue');
+    const yUpBtn = document.getElementById('yUpBtn');
+    const yDownBtn = document.getElementById('yDownBtn');
+    
+    const flipHBtn = document.getElementById('flipHBtn');
+    const flipVBtn = document.getElementById('flipVBtn');
+    const centerPhotoBtn = document.getElementById('centerPhotoBtn');
+    const resetAllBtn = document.getElementById('resetAllBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+    
+    // Masking Elements
+    const toggleMaskSettingsBtn = document.getElementById('toggleMaskSettingsBtn');
+    const maskSettingsWrapper = document.getElementById('maskSettingsWrapper');
+    const maskArrow = document.getElementById('maskArrow');
+    const maskLeft = document.getElementById('maskLeft');
+    const maskRight = document.getElementById('maskRight');
+    const maskTop = document.getElementById('maskTop');
+    const maskBottom = document.getElementById('maskBottom');
+    const maskThreshold = document.getElementById('maskThreshold');
+    const maskThreshVal = document.getElementById('maskThreshVal');
+    
+    // Overlays
+    const loadingOverlay = document.getElementById('loadingOverlay');
+    const uploadHint = document.getElementById('uploadHint');
+
+    // State Variables
+    let rawFrameImg = null;       // Original Loaded frame image
+    let processedFrameImg = null; // Frame with transparent cutout (Offscreen Canvas)
+    let userImg = null;           // User uploaded photo
+    
+    // User Photo Manipulation Coordinates
+    let userX = 600;              // Dynamic center placement on 1200x1200px space
+    let userY = 636;              // Offset centered precisely for the black box in your frame
+    let userScale = 1.0;
+    let userRotation = 0;         // Angle in degrees
+    let userFlipH = false;
+    let userFlipV = false;
+    
+    // Canvas sizing definition
+    const CANVAS_RESOLUTION = 1200; // Render scale to keep high definition downloads
+    canvas.width = CANVAS_RESOLUTION;
+    canvas.height = CANVAS_RESOLUTION;
+
+    // Interaction State
+    let isDragging = false;
+    let startX = 0;
+    let startY = 0;
+    
+    // Multi-touch Zoom State
+    let initialTouchDist = null;
+    let initialTouchScale = 1.0;
+
+    // 1. Initial Load of Default Frame
+    window.onload = function() {
+      loadFrame(DEFAULT_FRAME_URL);
+    };
+
+    // Show Custom Alerts / Toast Notification
+    function showToast(message, type = 'success') {
+      const toast = document.createElement('div');
+      toast.className = `p-4 rounded-xl shadow-xl flex items-center gap-3 border pointer-events-auto transition-all duration-300 transform translate-y-2 opacity-0 text-xs sm:text-sm font-semibold max-w-sm ${
+        type === 'success' 
+          ? 'bg-emerald-950/95 text-emerald-300 border-emerald-500/30' 
+          : 'bg-amber-950/95 text-amber-300 border-amber-500/30'
+      }`;
+      
+      const successIcon = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-emerald-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>`;
+      const warnIcon = `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-amber-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>`;
+      
+      toast.innerHTML = `${type === 'success' ? successIcon : warnIcon}<span>${message}</span>`;
+      const container = document.getElementById('toastContainer');
+      container.appendChild(toast);
+      
+      // Animate In
+      setTimeout(() => {
+        toast.classList.remove('opacity-0', 'translate-y-2');
+      }, 50);
+
+      // Animate Out
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    // Load Frame from URL or File
+    function loadFrame(source) {
+      loadingOverlay.classList.remove('opacity-0');
+      loadingOverlay.classList.add('flex');
+      
+      rawFrameImg = new Image();
+      // Handle cross origin just in case
+      rawFrameImg.crossOrigin = "anonymous";
+      rawFrameImg.src = source;
+      
+      rawFrameImg.onload = function() {
+        processFrameTransparency();
+        loadingOverlay.classList.add('opacity-0');
+        setTimeout(() => loadingOverlay.classList.remove('flex'), 300);
+        showToast("Bingkai Twibbon berhasil dimuat!", "success");
+        draw();
+      };
+      
+      rawFrameImg.onerror = function() {
+        // Fallback: If original image is missing, we build a beautiful digital Javanese themed frame vector on the spot to make sure the app never fails!
+        console.warn("Failed to load original frame. Creating a beautiful vector fallback.");
+        createVectorFallbackFrame();
+        loadingOverlay.classList.add('opacity-0');
+        setTimeout(() => loadingOverlay.classList.remove('flex'), 300);
+        showToast("Bingkai bawaan tidak ditemukan. Menggunakan bingkai cadangan.", "warn");
+      };
+    }
+
+    // Smart Pixel Processing: Key out the black square region at the center
+    function processFrameTransparency() {
+      if (!rawFrameImg) return;
+      
+      // Setup offscreen canvas
+      const offCanvas = document.createElement('canvas');
+      offCanvas.width = CANVAS_RESOLUTION;
+      offCanvas.height = CANVAS_RESOLUTION;
+      const offCtx = offCanvas.getContext('2d');
+      
+      // Draw standard frame
+      offCtx.drawImage(rawFrameImg, 0, 0, CANVAS_RESOLUTION, CANVAS_RESOLUTION);
+      
+      // Extract Masking Parameters from UI (values are 0 to 100)
+      const threshold = parseInt(maskThreshold.value);
+      const leftLimit = (parseInt(maskLeft.value) / 100) * CANVAS_RESOLUTION;
+      const rightLimit = (parseInt(maskRight.value) / 100) * CANVAS_RESOLUTION;
+      const topLimit = (parseInt(maskTop.value) / 100) * CANVAS_RESOLUTION;
+      const bottomLimit = (parseInt(maskBottom.value) / 100) * CANVAS_RESOLUTION;
+      
+      const imgData = offCtx.getImageData(0, 0, CANVAS_RESOLUTION, CANVAS_RESOLUTION);
+      const data = imgData.data;
+      
+      // Loop through pixels in designated bounding box and make very dark pixels transparent
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i];
+        const g = data[i+1];
+        const b = data[i+2];
+        
+        // Find x, y coordinates
+        const pixelIndex = i / 4;
+        const x = pixelIndex % CANVAS_RESOLUTION;
+        const y = Math.floor(pixelIndex / CANVAS_RESOLUTION);
+        
+        // Scan within bounds of central cut-out
+        if (x >= leftLimit && x <= rightLimit && y >= topLimit && y <= bottomLimit) {
+          // If pixel matches dark/black criteria (threshold)
+          if (r < threshold && g < threshold && b < threshold) {
+            data[i+3] = 0; // Set Alpha to 0 (completely transparent)
+          }
+        }
+      }
+      
+      // Put updated transparent pixel data back to offscreen canvas
+      offCtx.putImageData(imgData, 0, 0);
+      processedFrameImg = offCanvas;
+    }
+
+    // Dynamic Vector Frame Fallback (For robust operation)
+    function createVectorFallbackFrame() {
+      const offCanvas = document.createElement('canvas');
+      offCanvas.width = CANVAS_RESOLUTION;
+      offCanvas.height = CANVAS_RESOLUTION;
+      const offCtx = offCanvas.getContext('2d');
+      
+      // Draw Javanese themed creative vector frame
+      // Background base
+      offCtx.fillStyle = "#1e293b"; // Slate 800
+      offCtx.fillRect(0, 0, CANVAS_RESOLUTION, CANVAS_RESOLUTION);
+      
+      // Golden patterns on corners
+      offCtx.fillStyle = "#f59e0b"; // Golden Amber
+      
+      // Top banner
+      offCtx.fillStyle = "#d97706";
+      offCtx.fillRect(0, 0, CANVAS_RESOLUTION, 160);
+      
+      // Header text
+      offCtx.fillStyle = "#ffffff";
+      offCtx.font = "bold 44px Arial";
+      offCtx.textAlign = "center";
+      offCtx.fillText("I'M READY FOR MPLS 2026", CANVAS_RESOLUTION/2, 75);
+      
+      offCtx.fillStyle = "#fbbf24";
+      offCtx.font = "bold 56px Arial";
+      offCtx.fillText("SMP NEGERI 6 TEMANGGUNG", CANVAS_RESOLUTION/2, 135);
+      
+      // Bottom banner
+      offCtx.fillStyle = "#0f172a";
+      offCtx.fillRect(0, CANVAS_RESOLUTION - 160, CANVAS_RESOLUTION, 160);
+      offCtx.fillStyle = "#38bdf8";
+      offCtx.font = "bold 45px Arial";
+      offCtx.fillText("✨ MPLS RAMAH & KREATIF ✨", CANVAS_RESOLUTION/2, CANVAS_RESOLUTION - 75);
+      
+      // Draw transparent cutout box in the middle
+      offCtx.clearRect(280, 260, 640, 560);
+      
+      // Golden elegant frame border around cutout
+      offCtx.strokeStyle = "#fbbf24";
+      offCtx.lineWidth = 15;
+      offCtx.strokeRect(280, 260, 640, 560);
+      
+      processedFrameImg = offCanvas;
+      draw();
+    }
+
+    // Main Draw Function
+    function draw() {
+      // Clear main canvas
+      ctx.clearRect(0, 0, CANVAS_RESOLUTION, CANVAS_RESOLUTION);
+      
+      // 1. Draw User Photo behind frame
+      if (userImg) {
+        ctx.save();
+        
+        // Translate to standard focus pivot point
+        ctx.translate(userX, userY);
+        
+        // Apply Rotations (degrees converted to radians)
+        ctx.rotate((userRotation * Math.PI) / 180);
+        
+        // Apply Flips
+        const scaleX = userFlipH ? -1 : 1;
+        const scaleY = userFlipV ? -1 : 1;
+        ctx.scale(scaleX * userScale, scaleY * userScale);
+        
+        // Draw centered at translation origin
+        ctx.drawImage(
+          userImg, 
+          -userImg.width / 2, 
+          -userImg.height / 2
+        );
+        
+        ctx.restore();
+      } else {
+        // Draw elegant placeholder text on checkerboard when no photo uploaded
+        ctx.fillStyle = "#475569";
+        ctx.font = "medium 32px 'Plus Jakarta Sans', Arial";
+        ctx.textAlign = "center";
+        ctx.fillText("[ FOTO ANDA AKAN MUNCUL DI SINI ]", CANVAS_RESOLUTION / 2, CANVAS_RESOLUTION / 2 + 30);
+      }
+      
+      // 2. Draw Transparent-key Frame on top
+      if (processedFrameImg) {
+        ctx.drawImage(processedFrameImg, 0, 0, CANVAS_RESOLUTION, CANVAS_RESOLUTION);
+      }
+    }
+
+    // Synchronize X & Y Coordinates to Sliders and Labels (NEW)
+    function updatePositionSliders() {
+      xSlider.value = Math.round(userX);
+      ySlider.value = Math.round(userY);
+      
+      // Display relative position offset from the initial center (600, 636)
+      const relativeX = Math.round(userX - 600);
+      const relativeY = Math.round(userY - 636);
+      
+      xValue.innerText = `${relativeX > 0 ? '+' : ''}${relativeX}px`;
+      yValue.innerText = `${relativeY > 0 ? '+' : ''}${relativeY}px`;
+    }
+
+    // Fit User Image automatically to fill the cutout box efficiently
+    function fitUserImageToCutout() {
+      if (!userImg) return;
+      
+      // The cutout is roughly 600px wide, so we want the image to comfortably fill that space
+      const targetSize = 750; 
+      const widthScale = targetSize / userImg.width;
+      const heightScale = targetSize / userImg.height;
+      
+      // Fit to fill the minimum dimension elegantly
+      userScale = Math.max(widthScale, heightScale);
+      
+      // Set default position at cutout coordinates
+      userX = CANVAS_RESOLUTION / 2;     // 600
+      userY = CANVAS_RESOLUTION * 0.53;  // 636 (Perfect center of the black container)
+      userRotation = 0;
+      userFlipH = false;
+      userFlipV = false;
+      
+      // Update Sliders
+      zoomSlider.value = Math.round(userScale * 100);
+      zoomValue.innerText = `${zoomSlider.value}%`;
+      rotateSlider.value = 0;
+      rotateValue.innerText = `0°`;
+      
+      // Update Position controls (NEW)
+      updatePositionSliders();
+      
+      draw();
+    }
+
+    // Parse image file and loads it into memory
+    function handlePhotoUpload(e, isFrame = false) {
+      const file = e.target.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = function(event) {
+        const img = new Image();
+        img.onload = function() {
+          if (isFrame) {
+            rawFrameImg = img;
+            processFrameTransparency();
+            draw();
+            showToast("Bingkai kustom berhasil terpasang!", "success");
+          } else {
+            userImg = img;
+            fitUserImageToCutout();
+            uploadHint.classList.add('opacity-0');
+            showToast("Foto Anda berhasil diunggah!", "success");
+          }
+        };
+        img.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // Input Listeners
+    userPhotoInput.addEventListener('change', (e) => handlePhotoUpload(e, false));
+    framePhotoInput.addEventListener('change', (e) => handlePhotoUpload(e, true));
+
+    // Show Custom Frame uploader
+    toggleFrameUploadBtn.addEventListener('click', () => {
+      frameUploadWrapper.classList.toggle('hidden');
+    });
+
+    // Zoom Controls
+    zoomSlider.addEventListener('input', function() {
+      userScale = this.value / 100;
+      zoomValue.innerText = `${this.value}%`;
+      draw();
+    });
+
+    zoomInBtn.addEventListener('click', () => {
+      let val = Math.min(300, parseInt(zoomSlider.value) + 10);
+      zoomSlider.value = val;
+      userScale = val / 100;
+      zoomValue.innerText = `${val}%`;
+      draw();
+    });
+
+    zoomOutBtn.addEventListener('click', () => {
+      let val = Math.max(10, parseInt(zoomSlider.value) - 10);
+      zoomSlider.value = val;
+      userScale = val / 100;
+      zoomValue.innerText = `${val}%`;
+      draw();
+    });
+
+    // Rotate Controls
+    rotateSlider.addEventListener('input', function() {
+      userRotation = parseInt(this.value);
+      rotateValue.innerText = `${this.value}°`;
+      draw();
+    });
+
+    rotateCCWBtn.addEventListener('click', () => {
+      let val = parseInt(rotateSlider.value) - 15;
+      if (val < -180) val += 360;
+      rotateSlider.value = val;
+      userRotation = val;
+      rotateValue.innerText = `${val}°`;
+      draw();
+    });
+
+    rotateCWBtn.addEventListener('click', () => {
+      let val = parseInt(rotateSlider.value) + 15;
+      if (val > 180) val -= 360;
+      rotateSlider.value = val;
+      userRotation = val;
+      rotateValue.innerText = `${val}°`;
+      draw();
+    });
+
+    // Position Controls (NEW - Two-Way Sync)
+    xSlider.addEventListener('input', function() {
+      userX = parseInt(this.value);
+      updatePositionSliders();
+      draw();
+    });
+
+    ySlider.addEventListener('input', function() {
+      userY = parseInt(this.value);
+      updatePositionSliders();
+      draw();
+    });
+
+    xLeftBtn.addEventListener('click', () => {
+      userX = Math.max(0, userX - 10);
+      updatePositionSliders();
+      draw();
+    });
+
+    xRightBtn.addEventListener('click', () => {
+      userX = Math.min(CANVAS_RESOLUTION, userX + 10);
+      updatePositionSliders();
+      draw();
+    });
+
+    yUpBtn.addEventListener('click', () => {
+      userY = Math.max(0, userY - 10);
+      updatePositionSliders();
+      draw();
+    });
+
+    yDownBtn.addEventListener('click', () => {
+      userY = Math.min(CANVAS_RESOLUTION, userY + 10);
+      updatePositionSliders();
+      draw();
+    });
+
+    // Flip Controls
+    flipHBtn.addEventListener('click', () => {
+      userFlipH = !userFlipH;
+      draw();
+    });
+
+    flipVBtn.addEventListener('click', () => {
+      userFlipV = !userFlipV;
+      draw();
+    });
+
+    centerPhotoBtn.addEventListener('click', () => {
+      if (!userImg) {
+        showToast("Unggah foto terlebih dahulu!", "warn");
+        return;
+      }
+      fitUserImageToCutout();
+      showToast("Foto dikembalikan ke posisi tengah.", "success");
+    });
+
+    // Reset All Configuration
+    resetAllBtn.addEventListener('click', () => {
+      if (!userImg) {
+        showToast("Setelan sudah dalam posisi bawaan.", "warn");
+        return;
+      }
+      userScale = 1.0;
+      userRotation = 0;
+      userFlipH = false;
+      userFlipV = false;
+      
+      // Reset sliders
+      zoomSlider.value = 100;
+      zoomValue.innerText = "100%";
+      rotateSlider.value = 0;
+      rotateValue.innerText = "0°";
+      
+      // Masking sliders reset to defaults
+      maskLeft.value = 23;
+      maskRight.value = 77;
+      maskTop.value = 28;
+      maskBottom.value = 77;
+      maskThreshold.value = 30;
+      maskThreshVal.innerText = 30;
+
+      fitUserImageToCutout();
+      processFrameTransparency();
+      draw();
+      showToast("Seluruh pengaturan telah di-reset.", "success");
+    });
+
+    // Advanced Masking Controls live updates
+    function handleMaskSettingsChange() {
+      maskThreshVal.innerText = maskThreshold.value;
+      processFrameTransparency();
+      draw();
+    }
+    
+    [maskLeft, maskRight, maskTop, maskBottom, maskThreshold].forEach(el => {
+      el.addEventListener('input', handleMaskSettingsChange);
+    });
+
+    // Toggle Collapsible Mask Settings
+    toggleMaskSettingsBtn.addEventListener('click', () => {
+      maskSettingsWrapper.classList.toggle('hidden');
+      maskArrow.classList.toggle('rotate-180');
+    });
+
+    // Helper functions to map Canvas Resolution pixels to visually displayed bounds
+    function getCanvasCoordinates(e) {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = CANVAS_RESOLUTION / rect.width;
+      const scaleY = CANVAS_RESOLUTION / rect.height;
+      
+      // Check for touch events
+      if (e.touches && e.touches.length > 0) {
+        return {
+          x: (e.touches[0].clientX - rect.left) * scaleX,
+          y: (e.touches[0].clientY - rect.top) * scaleY
+        };
+      }
+      
+      return {
+        x: (e.clientX - rect.left) * scaleX,
+        y: (e.clientY - rect.top) * scaleY
+      };
+    }
+
+    // Mouse & Touch Drag and Drop Interaction Logic
+    function handleDragStart(e) {
+      if (!userImg) return;
+      isDragging = true;
+      const pos = getCanvasCoordinates(e);
+      startX = pos.x;
+      startY = pos.y;
+      
+      // Handle pinch-to-zoom multi-touch trigger
+      if (e.touches && e.touches.length === 2) {
+        initialTouchDist = getTouchDistance(e);
+        initialTouchScale = userScale;
+      }
+    }
+
+    function handleDragMove(e) {
+      if (!isDragging || !userImg) return;
+      e.preventDefault(); // Prevents layout panning on mobile
+      
+      // If 2 fingers touch, apply zoom
+      if (e.touches && e.touches.length === 2 && initialTouchDist !== null) {
+        const currentDist = getTouchDistance(e);
+        if (currentDist > 0) {
+          const ratio = currentDist / initialTouchDist;
+          userScale = Math.min(3, Math.max(0.1, initialTouchScale * ratio));
+          zoomSlider.value = Math.round(userScale * 100);
+          zoomValue.innerText = `${zoomSlider.value}%`;
+        }
+      } else {
+        // Standard single pointer pan
+        const pos = getCanvasCoordinates(e);
+        const dx = pos.x - startX;
+        const dy = pos.y - startY;
+        
+        userX += dx;
+        userY += dy;
+        
+        startX = pos.x;
+        startY = pos.y;
+
+        // Auto-update position sliders in real-time (NEW)
+        updatePositionSliders();
+      }
+      
+      draw();
+    }
+
+    function handleDragEnd() {
+      isDragging = false;
+      initialTouchDist = null;
+    }
+
+    // Calculate distance between two fingers on mobile pinch
+    function getTouchDistance(e) {
+      if (e.touches.length < 2) return 0;
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      return Math.sqrt(dx * dx + dy * dy);
+    }
+
+    // Attach Event Listeners to Canvas (Mouse & Mobile Touch support)
+    canvas.addEventListener('mousedown', handleDragStart);
+    canvas.addEventListener('mousemove', handleDragMove);
+    canvas.addEventListener('mouseup', handleDragEnd);
+    canvas.addEventListener('mouseleave', handleDragEnd);
+
+    canvas.addEventListener('touchstart', handleDragStart, { passive: false });
+    canvas.addEventListener('touchmove', handleDragMove, { passive: false });
+    canvas.addEventListener('touchend', handleDragEnd);
+    canvas.addEventListener('touchcancel', handleDragEnd);
+
+    // Download / Export Compiled Twibbon Frame
+    downloadBtn.addEventListener('click', () => {
+      if (!userImg) {
+        showToast("Gagal mengunduh! Silakan masukkan foto Anda terlebih dahulu.", "warn");
+        return;
+      }
+      
+      try {
+        // Redraw at highest fidelity
+        draw();
+        
+        // Generate high resolution image download
+        // clipboard or regular anchor link trigger
+        const dataURL = canvas.toDataURL("image/png");
+        const downloadLink = document.createElement('a');
+        
+        downloadLink.download = `Twibbon_MPLS2026_SMPN6_Temanggung_${Date.now()}.png`;
+        downloadLink.href = dataURL;
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+        
+        showToast("Twibbon berhasil dirakit dan diunduh!", "success");
+      } catch (err) {
+        console.error("Terjadi kesalahan saat memproses gambar: ", err);
+        showToast("Gagal menyimpan gambar. Gunakan peramban (browser) terbaru.", "warn");
+      }
+    });
+  </script>
+
+</body>
+</html>
